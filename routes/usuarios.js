@@ -6,7 +6,7 @@ import { autenticarToken, gerarToken } from "../middleware/auth.js";
 const router = express.Router();
 
 // Cadastrar novo usuário
-router.post("/signup", async (req, res) => {
+router.post("/usuarios/signup", async (req, res) => {
   try {
     const { nome, email, senha, categoria } = req.body;
 
@@ -23,7 +23,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // Login
-router.post("/login", async (req, res) => {
+router.post("/usuarios/login", async (req, res) => {
   try {
     const { email, senha } = req.body;
     const user = await Usuario.findOne({ email });
@@ -47,7 +47,7 @@ router.post("/login", async (req, res) => {
 
 
 // Alterar senha
-router.put("/recovery/:email", async (req, res) => {
+router.put("/usuarios/recovery/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const { senhaAtual, novaSenha } = req.body;
@@ -66,36 +66,6 @@ router.put("/recovery/:email", async (req, res) => {
 
     // Atualizar senha (o pre('save') vai re-hashar)
     usuario.senha = novaSenha;
-    await usuario.save();
-
-    res.json({ msg: "Senha alterada com sucesso" });
-  } catch (err) {
-    console.error("Erro ao alterar senha:", err);
-    res.status(500).json({ msg: "Erro ao alterar senha", erro: err.message });
-  }
-});
-
-// Alterar senha
-router.put("/recovery/:email", async (req, res) => {
-  try {
-    const { email } = req.params;
-    const { senhaAtual, novaSenha } = req.body;
-
-    if (!senhaAtual || !novaSenha)
-      return res.status(400).json({ msg: "Informe senha atual e nova senha" });
-
-    const usuario = await Usuario.findOne({ email });
-    if (!usuario)
-      return res.status(404).json({ msg: "Usuário não encontrado" });
-
-    // Comparar senha atual (texto puro) com hash do banco
-    const senhaCorreta = await bcrypt.compare(senhaAtual, usuario.senha);
-    if (!senhaCorreta)
-      return res.status(401).json({ msg: "Senha atual incorreta" });
-
-    // Criptografar nova senha antes de salvar
-    const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
-    usuario.senha = novaSenhaHash;
     await usuario.save();
 
     res.json({ msg: "Senha alterada com sucesso" });
