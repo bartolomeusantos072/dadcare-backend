@@ -6,7 +6,7 @@ import { autenticarToken, gerarToken } from "../middleware/auth.js";
 const router = express.Router();
 
 // Cadastrar novo usuário
-router.post("/usuarios/signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
   try {
     const { nome, email, senha, categoria } = req.body;
 
@@ -23,7 +23,7 @@ router.post("/usuarios/signup", async (req, res) => {
 });
 
 // Login
-router.post("/usuarios/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, senha } = req.body;
     const user = await Usuario.findOne({ email });
@@ -47,7 +47,7 @@ router.post("/usuarios/login", async (req, res) => {
 
 
 // Alterar senha
-router.put("/usuarios/recovery/:email", async (req, res) => {
+router.put("/recovery/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const { senhaAtual, novaSenha } = req.body;
