@@ -1,4 +1,6 @@
+
 import bcrypt from "bcrypt";
+
 import express from "express";
 import Usuario from "../models/Usuario.js";
 import { autenticarToken, gerarToken } from "../middleware/auth.js";
@@ -25,18 +27,22 @@ router.post("/signup", async (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   try {
+    
     const { email, senha } = req.body;
+  
+    
     const user = await Usuario.findOne({ email });
-
     if (!user)
       return res.status(401).json({ msg: "Usuário não encontrado" });
-
+    
     const senhaCorreta = await bcrypt.compare(senha, user.senha);
+
     if (!senhaCorreta)
       return res.status(401).json({ msg: "Senha incorreta" });
 
     // só gera token depois que a senha é validada
-    const token = gerarToken(user);
+    const token = gerarToken({ id: user._id, email: user.email, categoria: user.categoria });
+
 
     res.json({ usuario: user, token });
   } catch (err) {
@@ -65,8 +71,9 @@ router.put("/recovery/:email", async (req, res) => {
       return res.status(401).json({ msg: "Senha atual incorreta" });
 
     // Atualizar senha (o pre('save') vai re-hashar)
-    usuario.senha = novaSenha;
+    usuario.senha = await bcrypt.hash(novaSenha, 10);
     await usuario.save();
+
 
     res.json({ msg: "Senha alterada com sucesso" });
   } catch (err) {
