@@ -1,6 +1,6 @@
 
 import bcrypt from "bcryptjs";
-
+import jwt from "jsonwebtoken";
 import express from "express";
 import Usuario from "../models/Usuario.js";
 import { autenticarToken, gerarToken } from "../middleware/auth.js";
@@ -25,26 +25,33 @@ router.post("/signup", async (req, res) => {
 });
 
 // Login
+
+
 router.post("/login", async (req, res) => {
   try {
-    
     const { email, senha } = req.body;
-  
-    
-    const user = await Usuario.findOne({ email });
-    if (!user)
-      return res.status(401).json({ msg: "Usuário não encontrado" });
-    
-    const senhaCorreta = await bcrypt.compare(senha, user.senha);
 
-    if (!senhaCorreta)
-      return res.status(401).json({ msg: "Senha incorreta" });
+    const usuario = await Usuario.findOne({ email });
+    if (!usuario) {
+      return res.status(400).json({ msg: "E-mail não encontrado" });
+    }
 
-    // só gera token depois que a senha é validada
-    const token = gerarToken({ id: user._id, email: user.email, categoria: user.categoria });
+    const senhaValida = await usuario.verificarSenha(senha);
+    if (!senhaValida) {
+      return res.status(400).json({ msg: "Senha incorreta" });
+    }
 
+    const token = jwt.sign(
+      { id: usuario._id, categoria: usuario.categoria },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    res.json({ usuario: user, token });
+    res.json({
+      msg: "Login realizado com sucesso",
+      token,
+      usuario
+    });
   } catch (err) {
     res.status(500).json({ msg: "Erro ao fazer login", erro: err.message });
   }

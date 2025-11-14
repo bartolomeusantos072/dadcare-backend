@@ -12,7 +12,6 @@ const UsuarioSchema = new mongoose.Schema(
 );
 
 
-
 // Método para verificar senha
 UsuarioSchema.methods.verificarSenha = async function (senhaDigitada) {
   return await bcrypt.compare(senhaDigitada, this.senha);
