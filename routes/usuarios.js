@@ -79,7 +79,7 @@ router.post("/recovery/request", async (req, res) => {
     })
   console.log("Token de recuperação:", token);
 
-  res.json({ msg: "Token de recuperação enviado para o email" });
+ // res.json({ msg: "Token de recuperação enviado para o email" });
 });
 
 // Rota para confirmar recuperação
