@@ -70,19 +70,11 @@ router.post("/recovery/request", async (req, res) => {
     return res.status(404).json({ msg: "Usuário não encontrado" });
   }
 
-  // Gera um token temporário com validade de 8 horas
-  const token = jwt.sign(
-    { id: usuario._id }, // Payload: id do usuário
-    process.env.JWT_SECRET || "segredo-super-seguro", // Chave secreta para assinar o token
-    { expiresIn: "8h" } // Expiração do token (8 horas)
-  );
-
-  // Aqui você enviaria o token por email, mas para testes vamos apenas retornar o token
-  // Envia o token no corpo da resposta para o cliente
+   // Se o usuário for encontrado, informamos que o processo de recuperação está em andamento
   res.json({
-    msg: "Token de recuperação gerado com sucesso. Verifique seu email (simulado).",
-    token: token // Retorna o token gerado
+    msg: "Estamos recuperando sua senha. Verifique seu email (simulado) em breve.",
   });
+
 });
 
 
