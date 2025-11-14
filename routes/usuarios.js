@@ -15,9 +15,8 @@ router.post("/signup", async (req, res) => {
     const existe = await Usuario.findOne({ email });
     if (existe) return res.status(400).json({ msg: "E-mail já cadastrado" });
 
-    const senhaHash = await bcrypt.hash(senha, 10);
-
-    const novo = await Usuario.create({ nome, email, senha: senhaHash, categoria });
+    
+    const novo = await Usuario.create({ nome, email, senha, categoria });
     res.json({ usuario: novo });
   } catch (err) {
     res.status(500).json({ msg: "Erro ao cadastrar usuário", erro: err.message });
