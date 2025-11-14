@@ -58,36 +58,51 @@ router.post("/login", async (req, res) => {
 });
 
 
+// Rota para solicitar recuperação
+router.post("/recovery/request", async (req, res) => {
+  const { email } = req.body;
+  const usuario = await Usuario.findOne({ email });
+  if (!usuario) return res.status(404).json({ msg: "Usuário não encontrado" });
 
-// Alterar senha
-router.put("/recovery/:email", async (req, res) => {
+  // Gera token temporário curto (8h)
+  const token = jwt.sign(
+    { id: usuario._id },
+    process.env.JWT_SECRET || "segredo-super-seguro",
+    { expiresIn: "8h" }
+  );
+
+  // Aqui você enviaria por email, mas para teste podemos logar no console
+  res.json({
+      msg: "Token de recuperação:",
+      token,
+      usuario
+    })
+  console.log("Token de recuperação:", token);
+
+  res.json({ msg: "Token de recuperação enviado para o email" });
+});
+
+// Rota para confirmar recuperação
+router.put("/recovery/confirm", async (req, res) => {
+  const { token, novaSenha } = req.body;
+
+  if (!token || !novaSenha)
+    return res.status(400).json({ msg: "Token e nova senha são obrigatórios" });
+
   try {
-    const { email } = req.params;
-    const { senhaAtual, novaSenha } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "segredo-super-seguro");
+    const usuario = await Usuario.findById(decoded.id);
+    if (!usuario) return res.status(404).json({ msg: "Usuário não encontrado" });
 
-    if (!senhaAtual || !novaSenha)
-      return res.status(400).json({ msg: "Informe senha atual e nova senha" });
-
-    const usuario = await Usuario.findOne({ email });
-    if (!usuario)
-      return res.status(404).json({ msg: "Usuário não encontrado" });
-
-    // Comparar senha atual (texto puro) com hash do banco
-    const senhaCorreta = await bcrypt.compare(senhaAtual, usuario.senha);
-    if (!senhaCorreta)
-      return res.status(401).json({ msg: "Senha atual incorreta" });
-
-    // Atualizar senha (o pre('save') vai re-hashar)
     usuario.senha = await bcrypt.hash(novaSenha, 10);
     await usuario.save();
 
-
     res.json({ msg: "Senha alterada com sucesso" });
   } catch (err) {
-    console.error("Erro ao alterar senha:", err);
-    res.status(500).json({ msg: "Erro ao alterar senha", erro: err.message });
+    res.status(400).json({ msg: "Token inválido ou expirado" });
   }
 });
+
 
 
 export default router;
