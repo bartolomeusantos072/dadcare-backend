@@ -11,21 +11,7 @@ const UsuarioSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Antes de salvar, se a senha foi modificada, gera o hash
-UsuarioSchema.pre("save", async function (next) {
-  // Se a senha não foi modificada, apenas continua.
-  if (!this.isModified("senha")) return next();
 
-  // Se a senha for um hash válido, não gere novo hash
-  if (this.senha.startsWith("$2b$") || this.senha.startsWith("$2a$")) {
-    return next();
-  }
-
-
-  const salt = await bcrypt.genSalt(10);
-  this.senha = await bcrypt.hash(this.senha, salt);
-  next();
-});
 
 // Método para verificar senha
 UsuarioSchema.methods.verificarSenha = async function (senhaDigitada) {
