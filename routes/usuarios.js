@@ -60,21 +60,39 @@ router.post("/login", async (req, res) => {
 
 // Rota para solicitar recuperação
 router.post("/recovery/request", async (req, res) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  // Busca o usuário pelo email
-  const usuario = await Usuario.findOne({ email });
-  
-  // Se o usuário não for encontrado
-  if (!usuario) {
-    return res.status(404).json({ msg: "Usuário não encontrado" });
+    // Verifica se o email foi passado
+    if (!email) {
+      return res.status(400).json({ msg: "Email não fornecido" });
+    }
+
+    // Busca o usuário pelo email
+    const usuario = await Usuario.findOne({ email });
+
+    // Se o usuário não for encontrado
+    if (!usuario) {
+      return res.status(404).json({ msg: "Usuário não encontrado" });
+    }
+
+    // Gera um token temporário com validade de 8 horas
+    const token = jwt.sign(
+      { id: usuario._id }, // Payload: id do usuário
+      process.env.JWT_SECRET || "segredo-super-seguro", // Chave secreta para assinar o token
+      { expiresIn: "8h" } // Expiração do token (8 horas)
+    );
+
+    // Aqui você enviaria o token por email, mas para testes vamos apenas retornar o token
+    return res.json({
+      msg: "Token de recuperação gerado com sucesso. Verifique seu email (simulado).",
+      token: token, // Retorna o token gerado
+    });
+
+  } catch (error) {
+    console.error("Erro ao processar a requisição:", error);
+    return res.status(500).json({ msg: "Ocorreu um erro interno ao processar a solicitação" });
   }
-
-   // Se o usuário for encontrado, informamos que o processo de recuperação está em andamento
-  res.json({
-    msg: "Estamos recuperando sua senha. Verifique seu email (simulado) em breve.",
-  });
-
 });
 
 
