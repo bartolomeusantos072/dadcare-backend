@@ -1,5 +1,5 @@
 
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 import express from "express";
 import Usuario from "../models/Usuario.js";
