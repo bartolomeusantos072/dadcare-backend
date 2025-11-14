@@ -61,26 +61,30 @@ router.post("/login", async (req, res) => {
 // Rota para solicitar recuperação
 router.post("/recovery/request", async (req, res) => {
   const { email } = req.body;
-  const usuario = await Usuario.findOne({ email });
-  if (!usuario) return res.status(404).json({ msg: "Usuário não encontrado" });
 
-  // Gera token temporário curto (8h)
+  // Busca o usuário pelo email
+  const usuario = await Usuario.findOne({ email });
+  
+  // Se o usuário não for encontrado
+  if (!usuario) {
+    return res.status(404).json({ msg: "Usuário não encontrado" });
+  }
+
+  // Gera um token temporário com validade de 8 horas
   const token = jwt.sign(
-    { id: usuario._id },
-    process.env.JWT_SECRET || "segredo-super-seguro",
-    { expiresIn: "8h" }
+    { id: usuario._id }, // Payload: id do usuário
+    process.env.JWT_SECRET || "segredo-super-seguro", // Chave secreta para assinar o token
+    { expiresIn: "8h" } // Expiração do token (8 horas)
   );
 
-  // Aqui você enviaria por email, mas para teste podemos logar no console
+  // Aqui você enviaria o token por email, mas para testes vamos apenas retornar o token
+  // Envia o token no corpo da resposta para o cliente
   res.json({
-      msg: "Token de recuperação:",
-      token,
-      usuario
-    })
-  console.log("Token de recuperação:", token);
-
- // res.json({ msg: "Token de recuperação enviado para o email" });
+    msg: "Token de recuperação gerado com sucesso. Verifique seu email (simulado).",
+    token: token // Retorna o token gerado
+  });
 });
+
 
 // Rota para confirmar recuperação
 router.put("/recovery/confirm", async (req, res) => {
